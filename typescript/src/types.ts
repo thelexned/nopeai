@@ -36,3 +36,9 @@ export type Decision = {
   reason: string;
   matched_rules: Rule[];
 };
+
+export type PermissionEngine = {
+  can(agent: Agent, action: string, resource: Resource, context?: Context): boolean;
+  authorize(agent: Agent, action: string, resource: Resource, context?: Context): true;
+  explain(agent: Agent, action: string, resource: Resource, context?: Context): Decision;
+};

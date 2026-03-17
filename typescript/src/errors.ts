@@ -1,4 +1,4 @@
-import type { Decision, Resource } from "./types.ts";
+import type { Decision, Resource } from "./types.js";
 
 export class PermissionDeniedError extends Error {
   action: string;

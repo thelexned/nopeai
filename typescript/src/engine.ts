@@ -1,5 +1,12 @@
-import { PermissionDeniedError } from "./errors.ts";
-import type { Agent, Context, Decision, Resource, Rule } from "./types.ts";
+import { PermissionDeniedError } from "./errors.js";
+import type {
+  Agent,
+  Context,
+  Decision,
+  PermissionEngine,
+  Resource,
+  Rule,
+} from "./types.js";
 
 function matchesRole(ruleRole: string, agentRoles: string[]): boolean {
   return ruleRole === "" || agentRoles.includes(ruleRole);
@@ -47,7 +54,7 @@ function matchesRule(
   );
 }
 
-class PermissionEngine {
+class PermissionEngineImpl implements PermissionEngine {
   private readonly rules: Rule[];
 
   constructor(rules: Rule[]) {
@@ -109,5 +116,5 @@ class PermissionEngine {
 }
 
 export function createPermissionEngine(rules: Rule[]): PermissionEngine {
-  return new PermissionEngine(rules);
+  return new PermissionEngineImpl(rules);
 }

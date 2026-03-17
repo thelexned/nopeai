@@ -1,4 +1,4 @@
-import { createPermissionEngine } from "./engine.ts";
+import { createPermissionEngine } from "./engine.js";
 
 const toolRules = [
   {
@@ -51,6 +51,35 @@ const tenantRules = [
       agent.metadata?.tenant_id === resource.metadata?.tenant_id,
   },
 ];
+
+export const sampleAgents = {
+  agent: { id: "agent_1", roles: ["agent"] },
+  support: { id: "support_1", roles: ["agent", "support"] },
+  finance: {
+    id: "finance_1",
+    roles: ["finance"],
+    metadata: { tenant_id: "tenant_a" },
+  },
+};
+
+export const sampleResources = {
+  searchTool: { type: "tool", id: "search" },
+  emailTool: { type: "tool", id: "email" },
+  githubServer: { type: "mcp_server", id: "github" },
+  createIssueTool: { type: "mcp_tool", id: "github.create_issue" },
+  deleteRepoTool: { type: "mcp_tool", id: "github.delete_repo" },
+  invoice: {
+    type: "invoice",
+    id: "inv_1",
+    metadata: { tenant_id: "tenant_a" },
+  },
+};
+
+export const exampleRules = {
+  tools: toolRules,
+  mcp: mcpRules,
+  tenant: tenantRules,
+};
 
 export const examples = {
   tools: createPermissionEngine(toolRules),

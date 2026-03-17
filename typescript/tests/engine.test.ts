@@ -1,5 +1,12 @@
-import { createPermissionEngine } from "../src/index.ts";
-import { PermissionDeniedError } from "../src/errors.ts";
+import {
+  createPermissionEngine,
+  examples as exportedExamples,
+  sampleAgents as exportedSampleAgents,
+  sampleResources as exportedSampleResources,
+} from "../src/index.js";
+import { PermissionDeniedError } from "../src/errors.js";
+import { examples } from "../src/examples.js";
+import * as runtimeTypes from "../src/types.js";
 
 type Agent = {
   id: string;
@@ -263,6 +270,51 @@ test("20 finance can read invoice only if tenant matches", () => {
   assert(
     engine.can(otherFinanceAgent, "read", invoice) === false,
     "expected tenant mismatch deny"
+  );
+});
+
+test("21 authorize returns true when allowed", () => {
+  const engine = createPermissionEngine([
+    rule("agent", "read", "tool", "allow", "search"),
+  ]);
+  assert(engine.authorize(agent, "read", searchTool) === true, "expected authorize success");
+});
+
+test("22 exported example engines behave as documented", () => {
+  const financeAgent = makeAgent("finance_1", ["finance"], { tenant_id: "tenant_a" });
+
+  assert(examples.tools.can(agent, "call_tool", searchTool) === true, "expected tools example allow");
+  assert(examples.tools.can(agent, "send_email", emailTool) === false, "expected tools example deny");
+  assert(
+    examples.mcp.can(agent, "connect_mcp_server", githubServer) === true,
+    "expected mcp server allow"
+  );
+  assert(
+    examples.mcp.can(supportAgent, "call_mcp_tool", createIssueTool) === true,
+    "expected mcp tool allow"
+  );
+  assert(
+    examples.mcp.can(supportAgent, "call_mcp_tool", deleteRepoTool) === false,
+    "expected mcp tool deny"
+  );
+  assert(
+    examples.tenant.can(financeAgent, "read", invoice) === true,
+    "expected tenant example allow"
+  );
+});
+
+test("23 runtime type exports module loads cleanly", () => {
+  assert(Object.keys(runtimeTypes).length === 0, "expected type-only runtime exports");
+});
+
+test("24 root exports include packaged examples", () => {
+  assert(
+    exportedExamples.tools.can(
+      exportedSampleAgents.agent,
+      "call_tool",
+      exportedSampleResources.searchTool
+    ) === true,
+    "expected example engine export"
   );
 });
 

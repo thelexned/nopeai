@@ -1,0 +1,46 @@
+{
+  "name": "nopeai",
+  "version": "0.1.0",
+  "description": "Tiny, dependency-free permission engine for AI agents.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ai",
+    "authorization",
+    "permissions",
+    "security"
+  ],
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thelexned/nopeai.git"
+  },
+  "homepage": "https://github.com/thelexned/nopeai#readme",
+  "bugs": {
+    "url": "https://github.com/thelexned/nopeai/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
+    "smoke": "node ../scripts/smoke-test-typescript.mjs"
+  }
+}
