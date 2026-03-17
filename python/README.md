@@ -53,3 +53,16 @@ assert examples["tenant"].can(
     sample_resources["invoice"],
 ) is True
 ```
+
+
+## Validation
+
+Inputs are validated before rule evaluation:
+
+- `createPermissionEngine(rules)` validates each rule shape and `effect` value (`"allow"` or `"deny"`).
+- `can`, `authorize`, and `explain` validate `agent`, `action`, `resource`, and `context`.
+
+Validation raises explicit exceptions: `ValidationError`, `RuleValidationError`, `AgentValidationError`, `ResourceValidationError`, `ActionValidationError`, and `ContextValidationError`.
+
+`PermissionDeniedError` is reserved for authorization denials, so callers can distinguish malformed input from valid deny decisions.
+
