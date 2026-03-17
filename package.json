@@ -1,0 +1,28 @@
+{
+  "name": "nopeai-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "typescript"
+  ],
+  "scripts": {
+    "test": "npm run test:typescript && npm run test:python",
+    "test:python": "PYTHONPATH=python/src python3 python/tests/test_engine.py",
+    "test:typescript": "tsx typescript/tests/engine.test.ts",
+    "coverage:python": "python3 -m venv .venv && .venv/bin/pip install --quiet --disable-pip-version-check -r python/requirements-dev.txt && PYTHONPATH=python/src .venv/bin/python -m coverage run --rcfile=.coveragerc python/tests/test_engine.py && .venv/bin/python -m coverage report && .venv/bin/python -m coverage json -o coverage/python-coverage.json",
+    "coverage:typescript": "c8 --all --reporter=text --reporter=json-summary --include=typescript/src/**/*.ts tsx typescript/tests/engine.test.ts",
+    "coverage:human": "node scripts/generate-coverage-report.mjs",
+    "coverage": "npm run coverage:typescript && npm run coverage:python && npm run coverage:human",
+    "build:typescript": "npm --workspace typescript run build",
+    "build:python": "python3 -m build python",
+    "release:check": "node scripts/release-check.mjs",
+    "smoke:typescript": "node scripts/smoke-test-typescript.mjs",
+    "smoke:python": "bash scripts/smoke-test-python.sh",
+    "pack:typescript": "npm pack --json --dry-run --workspace typescript"
+  },
+  "devDependencies": {
+    "c8": "^11.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

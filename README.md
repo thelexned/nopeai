@@ -1,49 +1,122 @@
-# PermitAI
+# nopeai
 
-PermitAI is a very small, dependency-free permission system for AI agents.
+`nopeai` is a tiny, dependency-free permission engine for AI agents.
 
-It is designed to run in-process and answer a single question quickly: is this
-agent allowed to do this action on this resource?
+It answers one question, fast:
 
-The repository contains two matching implementations:
+`can this agent do this action to this resource?`
 
-- Python using only the standard library
-- TypeScript with no npm dependencies
+If you want a small permission layer for tools, MCP servers, invoices, tenant
+data, or other agent-facing resources, `nopeai` gives you a plain-object API
+with default deny and deny-overrides-allow behavior.
 
-## Design Principles
+## Why `nopeai`
 
-- Default deny
-- Deny overrides allow
-- Plain objects and plain functions
-- No policy language
-- No network calls
-- No persistence
-- No framework integration
-- Small enough to embed directly into an app or agent runtime
+- Small enough to embed directly into an agent runtime or app
+- No database, network calls, DSL, or framework lock-in
+- Same mental model in TypeScript and Python
+- Default deny, with explicit deny rules always winning
+- Easy to audit because the rules are just data
 
-## Repository Layout
+## Quick Example
 
-```text
-.
-├── README.md
-├── python
-│   ├── src
-│   │   ├── engine.py
-│   │   ├── errors.py
-│   │   ├── examples.py
-│   │   ├── init.py
-│   │   └── types.py
-│   └── tests
-│       └── test_engine.py
-└── typescript
-    ├── src
-    │   ├── engine.ts
-    │   ├── errors.ts
-    │   ├── examples.ts
-    │   ├── index.ts
-    │   └── types.ts
-    └── tests
-        └── engine.test.ts
+```ts
+import { createPermissionEngine } from "nopeai";
+
+const engine = createPermissionEngine([
+  {
+    role: "agent",
+    action: "call_tool",
+    resource_type: "tool",
+    resource_id: "search",
+    effect: "allow",
+  },
+  {
+    role: "agent",
+    action: "call_tool",
+    resource_type: "tool",
+    resource_id: "email",
+    effect: "deny",
+  },
+]);
+
+const agent = { id: "agent_1", roles: ["agent"] };
+
+engine.can(agent, "call_tool", { type: "tool", id: "search" }); // true
+engine.can(agent, "call_tool", { type: "tool", id: "email" }); // false
+```
+
+The Python version works the same way:
+
+```python
+from nopeai import createPermissionEngine
+
+engine = createPermissionEngine(
+    [
+        {
+            "role": "agent",
+            "action": "call_tool",
+            "resource_type": "tool",
+            "resource_id": "search",
+            "effect": "allow",
+        },
+        {
+            "role": "agent",
+            "action": "call_tool",
+            "resource_type": "tool",
+            "resource_id": "email",
+            "effect": "deny",
+        },
+    ]
+)
+
+agent = {"id": "agent_1", "roles": ["agent"]}
+
+assert engine.can(agent, "call_tool", {"type": "tool", "id": "search"}) is True
+assert engine.can(agent, "call_tool", {"type": "tool", "id": "email"}) is False
+```
+
+## How It Works
+
+Rules are plain objects with these fields:
+
+- `role`
+- `action`
+- `resource_type`
+- optional `resource_id`
+- `effect` as `"allow"` or `"deny"`
+- optional `condition(agent, action, resource, context)`
+
+Evaluation order:
+
+1. Find matching rules.
+2. If any match is `deny`, deny.
+3. Else if any match is `allow`, allow.
+4. Otherwise deny.
+
+Wildcards:
+
+- `role=""`
+- `action=""`
+- `resource_type=""`
+- `resource_id="*"`
+
+## How to Install
+
+Install the TypeScript package with your preferred JavaScript package manager:
+
+```bash
+npm install nopeai
+pnpm add nopeai
+yarn add nopeai
+bun add nopeai
+```
+
+Install the Python package with `pip` or `uv`:
+
+```bash
+pip install nopeai
+uv add nopeai
 ```
 
 ## API
@@ -55,103 +128,45 @@ Both implementations expose the same logical API:
 - `authorize(agent, action, resource, context?)`
 - `explain(agent, action, resource, context?) -> decision`
 
-Rule fields:
-
-- `role`
-- `action`
-- `resource_type`
-- optional `resource_id`
-- `effect` as `"allow"` or `"deny"`
-- optional `condition(agent, action, resource, context)`
-
-Wildcards:
-
-- `role=""`
-- `action=""`
-- `resource_type=""`
-- `resource_id="*"`
-
-Evaluation order:
-
-1. Find all matching rules
-2. If any matching rule is `deny`, deny
-3. Else if any matching rule is `allow`, allow
-4. Otherwise deny
-
-## Python Usage
-
-```python
-import sys
-sys.path.insert(0, "python/src")
-
-from engine import createPermissionEngine
-from errors import PermissionDeniedError
-
-rules = [
-    {
-        "role": "agent",
-        "action": "call_tool",
-        "resource_type": "tool",
-        "resource_id": "search",
-        "effect": "allow",
-    },
-    {
-        "role": "agent",
-        "action": "call_tool",
-        "resource_type": "tool",
-        "resource_id": "email",
-        "effect": "deny",
-    },
-]
-
-engine = createPermissionEngine(rules)
-
-agent = {"id": "agent_1", "roles": ["agent"]}
-search_tool = {"type": "tool", "id": "search"}
-email_tool = {"type": "tool", "id": "email"}
-
-assert engine.can(agent, "call_tool", search_tool) is True
-assert engine.can(agent, "call_tool", email_tool) is False
-
-try:
-    engine.authorize(agent, "call_tool", email_tool)
-except PermissionDeniedError as error:
-    print(error.decision["reason"])
-```
-
-## TypeScript Usage
+## TypeScript
 
 ```ts
-import { createPermissionEngine, PermissionDeniedError } from "./typescript/src/index.ts";
+import {
+  PermissionDeniedError,
+  createPermissionEngine,
+  examples,
+  sampleAgents,
+  sampleResources,
+} from "nopeai";
 
-const rules = [
+const engine = createPermissionEngine([
   {
-    role: "agent",
-    action: "call_tool",
-    resource_type: "tool",
-    resource_id: "search",
-    effect: "allow" as const,
+    role: "support",
+    action: "call_mcp_tool",
+    resource_type: "mcp_tool",
+    resource_id: "github.create_issue",
+    effect: "allow",
   },
-  {
-    role: "agent",
-    action: "call_tool",
-    resource_type: "tool",
-    resource_id: "email",
-    effect: "deny" as const,
-  },
-];
+]);
 
-const engine = createPermissionEngine(rules);
+console.log(
+  engine.can(
+    sampleAgents.support,
+    "call_mcp_tool",
+    sampleResources.createIssueTool
+  )
+); // true
 
-const agent = { id: "agent_1", roles: ["agent"] };
-const searchTool = { type: "tool", id: "search" };
-const emailTool = { type: "tool", id: "email" };
-
-console.log(engine.can(agent, "call_tool", searchTool)); // true
-console.log(engine.can(agent, "call_tool", emailTool)); // false
+console.log(
+  examples.tools.can(sampleAgents.agent, "call_tool", sampleResources.searchTool)
+); // true
 
 try {
-  engine.authorize(agent, "call_tool", emailTool);
+  engine.authorize(
+    sampleAgents.support,
+    "call_mcp_tool",
+    sampleResources.deleteRepoTool
+  );
 } catch (error) {
   if (error instanceof PermissionDeniedError) {
     console.log(error.decision.reason);
@@ -159,109 +174,101 @@ try {
 }
 ```
 
-## Tool Example
-
-Standard tools are modeled as resources:
+## Python
 
 ```python
-{"type": "tool", "id": "search"}
-{"type": "tool", "id": "email"}
+from nopeai import PermissionDeniedError, createPermissionEngine
+from nopeai.examples import examples, sample_agents, sample_resources
+
+engine = createPermissionEngine(
+    [
+        {
+            "role": "finance",
+            "action": "read",
+            "resource_type": "invoice",
+            "effect": "allow",
+            "condition": lambda agent, action, resource, context: agent["metadata"].get(
+                "tenant_id"
+            )
+            == resource["metadata"].get("tenant_id"),
+        }
+    ]
+)
+
+assert engine.can(
+    sample_agents["finance"],
+    "read",
+    sample_resources["invoice"],
+) is True
+
+assert examples["mcp"].can(
+    sample_agents["support"],
+    "call_mcp_tool",
+    sample_resources["delete_repo_tool"],
+) is False
+
+try:
+    engine.authorize(
+        sample_agents["agent"],
+        "call_tool",
+        sample_resources["email_tool"],
+    )
+except PermissionDeniedError as error:
+    print(error.decision["reason"])
 ```
 
-Example rule:
+## Included Examples
 
-```python
-{
-    "role": "agent",
-    "action": "call_tool",
-    "resource_type": "tool",
-    "resource_id": "search",
-    "effect": "allow",
-}
-```
-
-## MCP Server Example
-
-MCP servers are modeled as:
-
-```python
-{"type": "mcp_server", "id": "github"}
-{"type": "mcp_server", "id": "slack"}
-```
-
-Example rule:
-
-```python
-{
-    "role": "agent",
-    "action": "connect_mcp_server",
-    "resource_type": "mcp_server",
-    "resource_id": "github",
-    "effect": "allow",
-}
-```
-
-## MCP Tool Example
-
-MCP tools are modeled as:
-
-```python
-{"type": "mcp_tool", "id": "github.create_issue"}
-{"type": "mcp_tool", "id": "github.delete_repo"}
-```
-
-Example rules:
-
-```python
-{
-    "role": "support",
-    "action": "call_mcp_tool",
-    "resource_type": "mcp_tool",
-    "resource_id": "github.create_issue",
-    "effect": "allow",
-}
-
-{
-    "role": "support",
-    "action": "call_mcp_tool",
-    "resource_type": "mcp_tool",
-    "resource_id": "github.delete_repo",
-    "effect": "deny",
-}
-```
-
-## Tenant Condition Example
-
-Conditions let a rule depend on runtime context or metadata:
-
-```python
-{
-    "role": "finance",
-    "action": "read",
-    "resource_type": "invoice",
-    "effect": "allow",
-    "condition": lambda agent, action, resource, context:
-        agent["metadata"].get("tenant_id") == resource["metadata"].get("tenant_id"),
-}
-```
-
-## Running Tests
-
-Python:
-
-```bash
-python3 python/tests/test_engine.py
-```
+The package ships example engines, rule sets, agents, and resources so you can
+prototype quickly.
 
 TypeScript:
 
+- `examples`
+- `exampleRules`
+- `sampleAgents`
+- `sampleResources`
+
+Python:
+
+- `nopeai.examples.examples`
+- `nopeai.examples.example_rules`
+- `nopeai.examples.sample_agents`
+- `nopeai.examples.sample_resources`
+
+## Development
+
+If you are working from this repository instead of the published packages:
+
 ```bash
-node typescript/tests/engine.test.ts
+npm install
+python3 -m pip install -r python/requirements-dev.txt
 ```
 
-## Design Tradeoffs
+Run tests:
 
-- Kept the rule model intentionally small, so there is no policy DSL or parser.
-- Used plain object rules instead of classes to keep embedding friction low.
-- `explain()` returns only the matched rules and a simple reason string, which is enough for debugging without introducing audit logging or persistence.
-- Python uses a flat `src` directory with standard-library typing helpers only; TypeScript runs directly in Node without a separate test framework or npm toolchain.
+```bash
+npm test
+```
+
+Build publishable artifacts:
+
+```bash
+npm run build:typescript
+npm run build:python
+```
+
+## Publishing
+
+`nopeai` is published to:
+
+- `npm` from `typescript/package.json`
+- `PyPI` from `python/pyproject.toml`
+
+Releases use one shared version number across both packages.
+
+1. Update both package versions together.
+2. Push a Git tag in the format `vX.Y.Z`.
+3. GitHub Actions validates the tag, runs tests, builds both packages, smoke
+   tests the artifacts, and publishes them.
+4. Trusted publishing must be configured once in npm and PyPI.

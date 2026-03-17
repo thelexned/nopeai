@@ -1,0 +1,14 @@
+.coverage
+.venv/
+.pytest_cache/
+coverage/coverage-summary.json
+coverage/python-coverage.json
+coverage/tmp/
+htmlcov/
+node_modules/
+python/*.egg-info/
+python/build/
+python/dist/
+typescript/*.tsbuildinfo
+typescript/dist/
+**/__pycache__/
