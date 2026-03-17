@@ -1,4 +1,4 @@
-from engine import createPermissionEngine
+from .engine import createPermissionEngine
 
 
 tool_rules = [
@@ -55,6 +55,34 @@ tenant_rules = [
     }
 ]
 
+sample_agents = {
+    "agent": {"id": "agent_1", "roles": ["agent"]},
+    "support": {"id": "support_1", "roles": ["agent", "support"]},
+    "finance": {
+        "id": "finance_1",
+        "roles": ["finance"],
+        "metadata": {"tenant_id": "tenant_a"},
+    },
+}
+
+sample_resources = {
+    "search_tool": {"type": "tool", "id": "search"},
+    "email_tool": {"type": "tool", "id": "email"},
+    "github_server": {"type": "mcp_server", "id": "github"},
+    "create_issue_tool": {"type": "mcp_tool", "id": "github.create_issue"},
+    "delete_repo_tool": {"type": "mcp_tool", "id": "github.delete_repo"},
+    "invoice": {
+        "type": "invoice",
+        "id": "inv_1",
+        "metadata": {"tenant_id": "tenant_a"},
+    },
+}
+
+example_rules = {
+    "tools": tool_rules,
+    "mcp": mcp_rules,
+    "tenant": tenant_rules,
+}
 
 examples = {
     "tools": createPermissionEngine(tool_rules),

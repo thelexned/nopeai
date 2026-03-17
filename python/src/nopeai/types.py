@@ -1,4 +1,11 @@
-from typing import Any, Callable, Dict, List, Literal, NotRequired, TypedDict
+from typing import Any, Callable, Dict, List, Literal, TypedDict
+
+try:
+    from typing import NotRequired
+except ImportError:
+    class NotRequired:
+        def __class_getitem__(cls, item):
+            return item
 
 
 Context = Dict[str, Any]

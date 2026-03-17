@@ -1,10 +1,7 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-
-from engine import createPermissionEngine
-from errors import PermissionDeniedError
+import nopeai as init_module
+from nopeai import PermissionDeniedError, createPermissionEngine
+from nopeai import examples as examples_module
+from nopeai import types as types_module
 
 
 def run_tests():
@@ -236,7 +233,50 @@ def run_tests():
     assert engine.can(finance_agent, "read", invoice) is True
     assert engine.can(other_finance_agent, "read", invoice) is False
 
-    print("20 Python tests passed")
+    # 21 authorize returns true when allowed
+    engine = createPermissionEngine(
+        [rule("agent", "read", "tool", "allow", resource_id="search")]
+    )
+    assert engine.authorize(agent, "read", search_tool) is True
+
+    # 22 exported example engines behave as documented
+    assert examples_module.examples["tools"].can(agent, "call_tool", search_tool) is True
+    assert examples_module.examples["tools"].can(agent, "send_email", email_tool) is False
+    assert (
+        examples_module.examples["mcp"].can(
+            agent, "connect_mcp_server", github_server
+        )
+        is True
+    )
+    assert (
+        examples_module.examples["mcp"].can(
+            support_agent, "call_mcp_tool", create_issue_tool
+        )
+        is True
+    )
+    assert (
+        examples_module.examples["mcp"].can(
+            support_agent, "call_mcp_tool", delete_repo_tool
+        )
+        is False
+    )
+    assert examples_module.examples["tenant"].can(finance_agent, "read", invoice) is True
+
+    # 23 package init exposes the public API
+    assert init_module.__all__ == ["createPermissionEngine", "PermissionDeniedError"]
+    assert init_module.createPermissionEngine is createPermissionEngine
+    assert init_module.PermissionDeniedError is PermissionDeniedError
+
+    # 24 types module loads the runtime typing surface
+    assert types_module.Effect is not None
+    assert types_module.Context is not None
+    assert types_module.Agent is not None
+    assert types_module.Resource is not None
+    assert types_module.Condition is not None
+    assert types_module.Rule is not None
+    assert types_module.Decision is not None
+
+    print("24 Python tests passed")
 
 
 if __name__ == "__main__":

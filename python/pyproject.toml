@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nopeai"
+version = "0.1.0"
+description = "Tiny, dependency-free permission engine for AI agents."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "UNLICENSED" }
+keywords = ["ai", "authorization", "permissions", "security"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: Other/Proprietary License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Homepage = "https://github.com/thelexned/nopeai"
+Repository = "https://github.com/thelexned/nopeai"
+Issues = "https://github.com/thelexned/nopeai/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nopeai"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "README.md",
+  "pyproject.toml",
+  "src/nopeai",
+  "tests"
+]

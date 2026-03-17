@@ -1,4 +1,4 @@
-from errors import PermissionDeniedError
+from .errors import PermissionDeniedError
 
 
 def _matches_role(rule_role, agent_roles):
