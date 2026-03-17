@@ -236,6 +236,138 @@ Python:
 - `nopeai.examples.sample_agents`
 - `nopeai.examples.sample_resources`
 
+## Framework Integration Examples
+
+Yes. `nopeai` is framework-agnostic, so it works with LangChain, LangGraph,
+and PydanticAI. The integration point is the same in each stack: call
+`authorize(...)` right before executing a tool.
+
+### LangChain (TypeScript)
+
+```ts
+import { z } from "zod";
+import { tool } from "@langchain/core/tools";
+import { createPermissionEngine } from "nopeai";
+
+const permissions = createPermissionEngine([
+  {
+    role: "agent",
+    action: "call_tool",
+    resource_type: "tool",
+    resource_id: "web_search",
+    effect: "allow",
+  },
+  {
+    role: "agent",
+    action: "call_tool",
+    resource_type: "tool",
+    resource_id: "send_email",
+    effect: "deny",
+  },
+]);
+
+const identity = { id: "assistant_1", roles: ["agent"] };
+
+export const webSearch = tool(
+  async ({ query }) => {
+    permissions.authorize(identity, "call_tool", { type: "tool", id: "web_search" });
+    return `Search results for: ${query}`;
+  },
+  {
+    name: "web_search",
+    description: "Search the web for recent information",
+    schema: z.object({ query: z.string() }),
+  }
+);
+```
+
+### LangGraph (TypeScript)
+
+In LangGraph, the cleanest pattern is a dedicated tool-dispatch node that
+applies authorization for every selected tool.
+
+```ts
+import { createPermissionEngine } from "nopeai";
+
+const permissions = createPermissionEngine([
+  { role: "support", action: "call_tool", resource_type: "tool", effect: "allow" },
+  {
+    role: "support",
+    action: "call_tool",
+    resource_type: "tool",
+    resource_id: "delete_account",
+    effect: "deny",
+  },
+]);
+
+type State = {
+  agent: { id: string; roles: string[] };
+  nextToolId: string;
+  input: Record<string, unknown>;
+};
+
+export function toolNode(state: State) {
+  permissions.authorize(state.agent, "call_tool", {
+    type: "tool",
+    id: state.nextToolId,
+  });
+
+  // execute selected tool here only after authorize(...) passes
+  return { ...state };
+}
+```
+
+### PydanticAI (Python)
+
+```python
+from nopeai import PermissionDeniedError, createPermissionEngine
+from pydantic_ai import Agent
+
+permissions = createPermissionEngine(
+    [
+        {
+            "role": "assistant",
+            "action": "call_tool",
+            "resource_type": "tool",
+            "resource_id": "weather_api",
+            "effect": "allow",
+        },
+        {
+            "role": "assistant",
+            "action": "call_tool",
+            "resource_type": "tool",
+            "resource_id": "payments_api",
+            "effect": "deny",
+        },
+    ]
+)
+
+identity = {"id": "assistant_1", "roles": ["assistant"]}
+assistant = Agent("openai:gpt-4o-mini")
+
+
+def authorize_tool(tool_id: str) -> None:
+    permissions.authorize(identity, "call_tool", {"type": "tool", "id": tool_id})
+
+
+@assistant.tool
+def weather(city: str) -> str:
+    authorize_tool("weather_api")
+    return f"Weather for {city}: sunny"
+
+
+@assistant.tool
+def charge_card(amount: float) -> str:
+    authorize_tool("payments_api")
+    return f"Charged {amount}"
+
+
+try:
+    authorize_tool("payments_api")
+except PermissionDeniedError as error:
+    print(error.decision["reason"])  # deny_rule_matched
+```
+
 ## Development
 
 If you are working from this repository instead of the published packages:
