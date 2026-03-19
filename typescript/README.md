@@ -5,13 +5,13 @@
 ## Install
 
 ```bash
-npm install nopeai
+npm install @lexnede/nopeai
 ```
 
 ## Usage
 
 ```ts
-import { PermissionDeniedError, createPermissionEngine } from "nopeai";
+import { PermissionDeniedError, createPermissionEngine } from "@lexnede/nopeai";
 
 const engine = createPermissionEngine([
   {
@@ -40,7 +40,7 @@ try {
 ## Included Examples
 
 ```ts
-import { examples, sampleAgents, sampleResources } from "nopeai";
+import { examples, sampleAgents, sampleResources } from "@lexnede/nopeai";
 
 console.log(
   examples.tools.can(sampleAgents.agent, "call_tool", sampleResources.searchTool)

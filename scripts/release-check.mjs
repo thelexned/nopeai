@@ -33,8 +33,10 @@ const tsVersion = tsPackage.version;
 const pyName = readTomlValue(pyProject, "name");
 const pyVersion = readTomlValue(pyProject, "version");
 
-if (tsName !== "nopeai") {
-  throw new Error(`Expected typescript/package.json name to be "nopeai", got "${tsName}"`);
+if (tsName !== "@lexnede/nopeai") {
+  throw new Error(
+    `Expected typescript/package.json name to be "@lexnede/nopeai", got "${tsName}"`
+  );
 }
 
 if (pyName !== "nopeai") {
@@ -52,4 +54,4 @@ if (tagVersion && tagVersion !== tsVersion) {
   throw new Error(`Tag version ${tagVersion} does not match package version ${tsVersion}`);
 }
 
-console.log(`Release metadata OK for nopeai@${tsVersion}`);
+console.log(`Release metadata OK for @lexnede/nopeai / nopeai@${tsVersion}`);
