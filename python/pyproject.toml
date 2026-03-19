@@ -8,12 +8,13 @@ version = "0.1.0"
 description = "Tiny, dependency-free permission engine for AI agents."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "UNLICENSED" }
+license = { text = "MIT" }
+license-files = ["LICENSE"]
 keywords = ["ai", "authorization", "permissions", "security"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: Other/Proprietary License",
+  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -36,6 +37,7 @@ packages = ["src/nopeai"]
 
 [tool.hatch.build.targets.sdist]
 include = [
+  "LICENSE",
   "README.md",
   "pyproject.toml",
   "src/nopeai",

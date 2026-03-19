@@ -25,7 +25,7 @@
     "permissions",
     "security"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/thelexned/nopeai.git"
