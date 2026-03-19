@@ -1,5 +1,5 @@
 {
-  "name": "nopeai",
+  "name": "@lexnede/nopeai",
   "version": "0.1.0",
   "description": "Tiny, dependency-free permission engine for AI agents.",
   "type": "module",

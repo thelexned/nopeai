@@ -21,7 +21,7 @@ with default deny and deny-overrides-allow behavior.
 ## Quick Example
 
 ```ts
-import { createPermissionEngine } from "nopeai";
+import { createPermissionEngine } from "@lexnede/nopeai";
 
 const engine = createPermissionEngine([
   {
@@ -106,10 +106,10 @@ Wildcards:
 Install the TypeScript package with your preferred JavaScript package manager:
 
 ```bash
-npm install nopeai
-pnpm add nopeai
-yarn add nopeai
-bun add nopeai
+npm install @lexnede/nopeai
+pnpm add @lexnede/nopeai
+yarn add @lexnede/nopeai
+bun add @lexnede/nopeai
 ```
 
 Install the Python package with `pip` or `uv`:
@@ -137,7 +137,7 @@ import {
   examples,
   sampleAgents,
   sampleResources,
-} from "nopeai";
+} from "@lexnede/nopeai";
 
 const engine = createPermissionEngine([
   {
@@ -394,7 +394,7 @@ npm run build:python
 
 `nopeai` is published to:
 
-- `npm` from `typescript/package.json`
+- `npm` as `@lexnede/nopeai` from `typescript/package.json`
 - `PyPI` from `python/pyproject.toml`
 
 Releases use one shared version number across both packages.
