@@ -119,6 +119,34 @@ pip install nopeai
 uv add nopeai
 ```
 
+
+## Validation
+
+Both engines validate inputs before rule evaluation. Validation failures are explicit errors (not authorization denials):
+
+- Rule validation at `createPermissionEngine(...)` time
+- Runtime validation for `agent`, `action`, `resource`, and `context` on `can`, `authorize`, and `explain`
+
+TypeScript validation errors:
+
+- `ValidationError` (base)
+- `RuleValidationError`
+- `AgentValidationError`
+- `ResourceValidationError`
+- `ActionValidationError`
+- `ContextValidationError`
+
+Python validation errors:
+
+- `ValidationError` (base)
+- `RuleValidationError`
+- `AgentValidationError`
+- `ResourceValidationError`
+- `ActionValidationError`
+- `ContextValidationError`
+
+Use these to distinguish malformed input from `PermissionDeniedError` (which represents a valid deny decision).
+
 ## API
 
 Both implementations expose the same logical API:

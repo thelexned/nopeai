@@ -4,7 +4,12 @@ import {
   sampleAgents as exportedSampleAgents,
   sampleResources as exportedSampleResources,
 } from "../src/index.js";
-import { PermissionDeniedError } from "../src/errors.js";
+import {
+  AgentValidationError,
+  PermissionDeniedError,
+  ResourceValidationError,
+  RuleValidationError,
+} from "../src/errors.js";
 import { examples } from "../src/examples.js";
 import * as runtimeTypes from "../src/types.js";
 
@@ -44,6 +49,16 @@ function assert(condition: unknown, message: string): void {
   if (!condition) {
     throw new Error(message);
   }
+}
+
+function assertThrowsInstance(fn: () => void, expected: new (...args: unknown[]) => Error, message: string): void {
+  let thrown: unknown;
+  try {
+    fn();
+  } catch (error) {
+    thrown = error;
+  }
+  assert(thrown instanceof expected, message);
 }
 
 function makeAgent(
@@ -315,6 +330,33 @@ test("24 root exports include packaged examples", () => {
       exportedSampleResources.searchTool
     ) === true,
     "expected example engine export"
+  );
+});
+
+
+test("25 createPermissionEngine validates malformed rules", () => {
+  assertThrowsInstance(
+    () => createPermissionEngine([{ role: "agent", action: "read", resource_type: "tool", effect: "invalid" } as Rule]),
+    RuleValidationError,
+    "expected RuleValidationError for invalid effect"
+  );
+});
+
+test("26 runtime validation rejects malformed agent", () => {
+  const engine = createPermissionEngine([rule("agent", "read", "tool", "allow", "search")]);
+  assertThrowsInstance(
+    () => engine.can({ id: "agent_1", roles: ["agent", 7] } as unknown as Agent, "read", searchTool),
+    AgentValidationError,
+    "expected AgentValidationError for non-string role"
+  );
+});
+
+test("27 runtime validation rejects malformed resource", () => {
+  const engine = createPermissionEngine([rule("agent", "read", "tool", "allow", "search")]);
+  assertThrowsInstance(
+    () => engine.can(agent, "read", { type: "tool" } as unknown as Resource),
+    ResourceValidationError,
+    "expected ResourceValidationError for missing id"
   );
 });
 

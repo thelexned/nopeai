@@ -1,5 +1,11 @@
 import nopeai as init_module
-from nopeai import PermissionDeniedError, createPermissionEngine
+from nopeai import (
+    AgentValidationError,
+    PermissionDeniedError,
+    ResourceValidationError,
+    RuleValidationError,
+    createPermissionEngine,
+)
 from nopeai import examples as examples_module
 from nopeai import types as types_module
 
@@ -263,7 +269,16 @@ def run_tests():
     assert examples_module.examples["tenant"].can(finance_agent, "read", invoice) is True
 
     # 23 package init exposes the public API
-    assert init_module.__all__ == ["createPermissionEngine", "PermissionDeniedError"]
+    assert init_module.__all__ == [
+        "createPermissionEngine",
+        "PermissionDeniedError",
+        "ValidationError",
+        "RuleValidationError",
+        "AgentValidationError",
+        "ResourceValidationError",
+        "ActionValidationError",
+        "ContextValidationError",
+    ]
     assert init_module.createPermissionEngine is createPermissionEngine
     assert init_module.PermissionDeniedError is PermissionDeniedError
 
@@ -276,7 +291,33 @@ def run_tests():
     assert types_module.Rule is not None
     assert types_module.Decision is not None
 
-    print("24 Python tests passed")
+    # 25 createPermissionEngine validates malformed rules
+    try:
+        createPermissionEngine(
+            [{"role": "agent", "action": "read", "resource_type": "tool", "effect": "invalid"}]
+        )
+        raise AssertionError("Expected RuleValidationError")
+    except RuleValidationError:
+        pass
+
+    # 26 runtime validation rejects malformed agent
+    engine = createPermissionEngine(
+        [rule("agent", "read", "tool", "allow", resource_id="search")]
+    )
+    try:
+        engine.can({"id": "agent_1", "roles": ["agent", 1]}, "read", search_tool)
+        raise AssertionError("Expected AgentValidationError")
+    except AgentValidationError:
+        pass
+
+    # 27 runtime validation rejects malformed resource
+    try:
+        engine.can(agent, "read", {"type": "tool"})
+        raise AssertionError("Expected ResourceValidationError")
+    except ResourceValidationError:
+        pass
+
+    print("27 Python tests passed")
 
 
 if __name__ == "__main__":

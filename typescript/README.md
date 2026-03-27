@@ -50,3 +50,16 @@ console.log(
   examples.tenant.can(sampleAgents.finance, "read", sampleResources.invoice)
 ); // true
 ```
+
+
+## Validation
+
+Inputs are validated before rule evaluation:
+
+- `createPermissionEngine(rules)` validates each rule shape and `effect` value (`allow` or `deny`).
+- `can`, `authorize`, and `explain` validate `agent`, `action`, `resource`, and `context`.
+
+Validation throws explicit errors: `ValidationError`, `RuleValidationError`, `AgentValidationError`, `ResourceValidationError`, `ActionValidationError`, and `ContextValidationError`.
+
+`PermissionDeniedError` is only used for authorization denials, so callers can reliably branch on bad input vs deny results.
+
